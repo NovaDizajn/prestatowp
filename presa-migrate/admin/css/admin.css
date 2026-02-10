@@ -1,0 +1,84 @@
+/* Presa Migrate admin */
+.presa-migrate-wrap .nav-tab-wrapper {
+	margin-bottom: 1em;
+}
+.presa-test-result {
+	margin-left: 8px;
+}
+.presa-test-result.success {
+	color: #00a32a;
+}
+.presa-test-result.error {
+	color: #d63638;
+}
+.presa-live-log-wrap {
+	margin-bottom: 1.5em;
+}
+.presa-live-log-title {
+	margin-bottom: 0.35em;
+	font-size: 1em;
+}
+.presa-live-log {
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 12px 14px;
+	min-height: 80px;
+	max-height: 220px;
+	overflow-y: auto;
+	font-size: 13px;
+	line-height: 1.5;
+	list-style: none;
+	margin: 0;
+}
+.presa-live-log li {
+	display: block;
+	margin: 0 0 4px 0;
+	padding: 2px 0;
+	white-space: pre-wrap;
+	word-break: break-word;
+	border: none;
+	list-style: none;
+}
+.presa-live-log-idle {
+	color: #646970;
+}
+.presa-live-log .presa-log-line {
+	display: block;
+	margin: 0 0 4px 0;
+	padding: 2px 0;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+.presa-live-log .presa-log-line.presa-log-success { color: #00a32a; }
+.presa-live-log .presa-log-line.presa-log-error { color: #d63638; font-weight: 500; }
+.presa-migrate-actions .button + .button { margin-left: 8px; }
+.presa-debug-result { display: block; margin-top: 8px; }
+.presa-debug-result .presa-debug-pre { background: #f0f0f1; padding: 10px; max-height: 200px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+.presa-debug-result.error { color: #d63638; }
+.presa-loading .spinner {
+	float: none;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 6px;
+}
+.presa-products-table-wrap {
+	max-height: 400px;
+	overflow: auto;
+	margin: 1em 0;
+}
+.presa-products-count {
+	font-weight: 600;
+}
+.presa-migration-progress progress {
+	width: 100%;
+	max-width: 400px;
+	height: 24px;
+}
+.presa-migration-status {
+	margin-top: 8px;
+}
+.presa-migration-errors {
+	color: #d63638;
+	font-size: 13px;
+}
