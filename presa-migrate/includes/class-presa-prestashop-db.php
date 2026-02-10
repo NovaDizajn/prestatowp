@@ -35,6 +35,11 @@ class Presa_Prestashop_Db {
 	private $dbname;
 
 	/**
+	 * @var int DB port.
+	 */
+	private $port;
+
+	/**
 	 * @var string Table prefix (e.g. ps_).
 	 */
 	private $prefix;
@@ -69,24 +74,36 @@ class Presa_Prestashop_Db {
 	/**
 	 * Constructor.
 	 *
-	 * @param string $host     DB host.
-	 * @param string $user     DB user.
-	 * @param string $password DB password.
-	 * @param string $dbname   DB name.
+	 * @param string $host     DB host (optional; defaults from plugin options).
+	 * @param string $user     DB user (optional; defaults from plugin options).
+	 * @param string $password DB password (optional; defaults from plugin options).
+	 * @param string $dbname   DB name (optional; defaults from plugin options).
 	 * @param string $prefix   Table prefix (default ps_).
 	 * @param string $base_url Base URL for image URLs.
 	 * @param string $lang_iso Language ISO code from ps_lang (default sr).
 	 * @param string $shop_id  Optional id_shop for multistore; empty = first active.
+	 * @param int    $port     DB port (default 3306).
 	 */
-	public function __construct( $host, $user, $password, $dbname, $prefix = 'ps_', $base_url = '', $lang_iso = 'sr', $shop_id = '' ) {
-		$this->host     = $host;
-		$this->user     = $user;
+	public function __construct( $host = '', $user = '', $password = '', $dbname = '', $prefix = '', $base_url = '', $lang_iso = '', $shop_id = '', $port = 0 ) {
+		$opt = function_exists( 'get_option' );
+		$this->host     = $host !== '' ? $host : ( $opt ? (string) get_option( 'presa_db_host', '' ) : '' );
+		$this->user     = $user !== '' ? $user : ( $opt ? (string) get_option( 'presa_db_user', '' ) : '' );
+		if ( $password === '' && $opt ) {
+			$password = (string) get_option( 'presa_db_pass', get_option( 'presa_db_password', '' ) );
+		}
 		$this->password = $password;
-		$this->dbname   = $dbname;
-		$this->prefix   = $prefix ?: 'ps_';
+		$this->dbname   = $dbname !== '' ? $dbname : ( $opt ? (string) get_option( 'presa_db_name', '' ) : '' );
+		$this->prefix   = $prefix !== '' ? $prefix : ( $opt ? (string) get_option( 'presa_db_prefix', 'ps_' ) : 'ps_' );
+		if ( $base_url === '' && $opt ) {
+			$base_url = (string) get_option( 'presa_source_url', get_option( 'presa_prestashop_url', '' ) );
+		}
 		$this->base_url = rtrim( $base_url, '/' );
-		$this->lang_iso = $lang_iso ?: 'sr';
-		$this->shop_id  = $shop_id;
+		$this->lang_iso = $lang_iso !== '' ? $lang_iso : ( $opt ? (string) get_option( 'presa_db_lang_iso', 'sr' ) : 'sr' );
+		$this->shop_id  = $shop_id !== '' ? $shop_id : ( $opt ? (string) get_option( 'presa_db_shop_id', '' ) : '' );
+		if ( ! $port && $opt ) {
+			$port = (int) get_option( 'presa_db_port', 3306 );
+		}
+		$this->port = $port > 0 ? (int) $port : 3306;
 	}
 
 	/**
@@ -99,7 +116,7 @@ class Presa_Prestashop_Db {
 			return $this->conn;
 		}
 		try {
-			$this->conn = new mysqli( $this->host, $this->user, $this->password, $this->dbname );
+			$this->conn = new mysqli( $this->host, $this->user, $this->password, $this->dbname, (int) $this->port );
 		} catch ( Exception $e ) {
 			return new WP_Error( 'db_connect', $e->getMessage() );
 		}
