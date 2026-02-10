@@ -184,13 +184,22 @@ class Presa_Mapper {
 
 		$combinations = isset( $product['combinations'] ) && is_array( $product['combinations'] ) ? $product['combinations'] : array();
 		if ( ! empty( $combinations ) ) {
+			if ( function_exists( 'presa_migrate_log' ) ) {
+				presa_migrate_log( sprintf( 'Product %s create type=VARIABLE', isset( $product['id'] ) ? $product['id'] : '' ) );
+			}
 			return $this->create_wc_variable_product_from_combinations( $product, $image_ids, $errors );
 		}
 		$variations = isset( $product['variations'] ) && is_array( $product['variations'] ) ? $product['variations'] : array();
 		if ( ! empty( $variations ) ) {
+			if ( function_exists( 'presa_migrate_log' ) ) {
+				presa_migrate_log( sprintf( 'Product %s create type=VARIABLE', isset( $product['id'] ) ? $product['id'] : '' ) );
+			}
 			return $this->create_wc_variable_product( $product, $image_ids, $variations, $errors );
 		}
 
+		if ( function_exists( 'presa_migrate_log' ) ) {
+			presa_migrate_log( sprintf( 'Product %s create type=SIMPLE', isset( $product['id'] ) ? $product['id'] : '' ) );
+		}
 		return $this->create_wc_simple_product( $product, $image_ids, $errors );
 	}
 
@@ -229,6 +238,9 @@ class Presa_Mapper {
 		$combinations = isset( $product['combinations'] ) && is_array( $product['combinations'] ) ? $product['combinations'] : array();
 		$variations_legacy = isset( $product['variations'] ) && is_array( $product['variations'] ) ? $product['variations'] : array();
 		$has_variations = ! empty( $combinations ) || ! empty( $variations_legacy );
+		if ( function_exists( 'presa_migrate_log' ) ) {
+			presa_migrate_log( sprintf( 'Product %s create type=%s', isset( $product['id'] ) ? $product['id'] : '', $has_variations ? 'VARIABLE' : 'SIMPLE' ) );
+		}
 		$new_type = $has_variations ? 'variable' : 'simple';
 		wp_set_object_terms( $existing_wc_id, $new_type, 'product_type' );
 		$wc = wc_get_product( $existing_wc_id );

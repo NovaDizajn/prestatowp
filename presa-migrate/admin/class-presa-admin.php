@@ -358,18 +358,23 @@ class Presa_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Nemate dozvolu.', 'presa-migrate' ) ) );
 		}
-		$url = get_option( 'presa_prestashop_url', '' );
-		$key = get_option( 'presa_prestashop_api_key', '' );
-		if ( ! $url || ! $key ) {
-			wp_send_json_error( array( 'message' => __( 'Unesite URL i API ključ u podešavanjima.', 'presa-migrate' ) ) );
-		}
+		$mode   = get_option( 'presa_prestashop_api_mode', 'api' );
 		$offset = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
 		$limit  = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 100;
 		$limit  = min( 250, max( 1, $limit ) );
 		try {
-			$mode   = get_option( 'presa_prestashop_api_mode', 'api' );
-			$client = new Presa_Prestashop_Client( $url, $key, $mode );
-			$result = $client->get_products_list_page( $offset, $limit );
+			if ( $mode === 'db' ) {
+				$client = new Presa_Prestashop_Db();
+				$result = $client->get_products_list( $offset, $limit );
+			} else {
+				$url = get_option( 'presa_prestashop_url', '' );
+				$key = get_option( 'presa_prestashop_api_key', '' );
+				if ( ! $url || ! $key ) {
+					wp_send_json_error( array( 'message' => __( 'Unesite URL i API ključ u podešavanjima.', 'presa-migrate' ) ) );
+				}
+				$client = new Presa_Prestashop_Client( $url, $key, $mode );
+				$result = $client->get_products_list_page( $offset, $limit );
+			}
 			if ( is_wp_error( $result ) ) {
 				wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 			}
@@ -400,14 +405,19 @@ class Presa_Admin {
 		if ( empty( $product_ids ) ) {
 			wp_send_json_error( array( 'message' => __( 'Nema ID-eva proizvoda. Prvo preuzmite listu proizvoda.', 'presa-migrate' ) ) );
 		}
-		$url = get_option( 'presa_prestashop_url', '' );
-		$key = get_option( 'presa_prestashop_api_key', '' );
-		if ( ! $url || ! $key ) {
-			wp_send_json_error( array( 'message' => __( 'Unesite URL i API ključ.', 'presa-migrate' ) ) );
-		}
 		try {
-			$mode   = get_option( 'presa_prestashop_api_mode', 'api' );
-			$runner = new Presa_Migrate_Runner( $url, $key, $mode );
+			$mode = get_option( 'presa_prestashop_api_mode', 'api' );
+			if ( $mode === 'db' ) {
+				$source = new Presa_Prestashop_Db();
+				$runner = new Presa_Migrate_Runner( $source );
+			} else {
+				$url = get_option( 'presa_prestashop_url', '' );
+				$key = get_option( 'presa_prestashop_api_key', '' );
+				if ( ! $url || ! $key ) {
+					wp_send_json_error( array( 'message' => __( 'Unesite URL i API ključ.', 'presa-migrate' ) ) );
+				}
+				$runner = new Presa_Migrate_Runner( $url, $key, $mode );
+			}
 			$result = $runner->run_batch( $product_ids );
 			if ( is_wp_error( $result ) ) {
 				wp_send_json_error( array( 'message' => $result->get_error_message() ) );

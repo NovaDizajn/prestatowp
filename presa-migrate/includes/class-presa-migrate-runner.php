@@ -22,6 +22,11 @@ class Presa_Migrate_Runner {
 	private $source;
 
 	/**
+	 * @var string Source mode label (api/db).
+	 */
+	private $source_mode = 'api';
+
+	/**
 	 * @var Presa_Mapper
 	 */
 	private $mapper;
@@ -36,8 +41,10 @@ class Presa_Migrate_Runner {
 	public function __construct( $source_or_url, $api_key = null, $api_mode = 'api' ) {
 		if ( is_object( $source_or_url ) && method_exists( $source_or_url, 'get_product' ) ) {
 			$this->source = $source_or_url;
+			$this->source_mode = ( $source_or_url instanceof Presa_Prestashop_Db ) ? 'db' : 'api';
 		} else {
 			$this->source = new Presa_Prestashop_Client( $source_or_url, $api_key ?: '', $api_mode );
+			$this->source_mode = 'api';
 		}
 		$this->mapper = new Presa_Mapper( $this->source );
 	}
@@ -57,7 +64,7 @@ class Presa_Migrate_Runner {
 		$log             = array();
 		$first_id        = ! empty( $product_ids ) ? reset( $product_ids ) : 0;
 		if ( function_exists( 'presa_migrate_log' ) ) {
-			presa_migrate_log( 'run_batch start: ids=' . implode( ',', $product_ids ) . ', update_existing=' . ( $update_existing ? '1' : '0' ) );
+			presa_migrate_log( 'run_batch start: mode=' . $this->source_mode . ', ids=' . implode( ',', $product_ids ) . ', update_existing=' . ( $update_existing ? '1' : '0' ) );
 		}
 		foreach ( $product_ids as $id ) {
 			if ( ! $id ) {
@@ -80,6 +87,13 @@ class Presa_Migrate_Runner {
 				$errors[] = $msg;
 				$log[]    = sprintf( __( 'Proizvod #%d: preskočen – nema naslova/cene', 'presa-migrate' ), $id );
 				continue;
+			}
+			$combinations_count = 0;
+			if ( isset( $full['combinations'] ) && is_array( $full['combinations'] ) ) {
+				$combinations_count = count( $full['combinations'] );
+			}
+			if ( function_exists( 'presa_migrate_log' ) ) {
+				presa_migrate_log( sprintf( 'Product %d get_product combinations_count=%d', $id, $combinations_count ) );
 			}
 			// Debug: store first product as received (for "Šta je poslato mapper-u").
 			if ( $id === $first_id ) {
